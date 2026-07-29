@@ -16,7 +16,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 final class AdminController extends AbstractController
 {
     #[Route('/articles/add', name: 'article_add')]
-    public function add(
+    public function articleAdd(
         Request $request,
         EntityManagerInterface $em,
         SluggerInterface $slugger
@@ -36,6 +36,29 @@ final class AdminController extends AbstractController
 
         return $this->render('article/add.html.twig', [
             'articleForm' => $form
+        ]);
+    }
+
+    #[Route('/articles/edit/{id}', name: 'article_edit')]
+    public function articleEdit(
+        Request $request,
+        Article $article,
+        EntityManagerInterface $em
+    ): Response {
+        $this->denyAccessUnlessGranted('ARTICLE_EDIT', $article);
+
+        $form = $this->createForm(ArticleType::class, $article);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+
+            return $this->redirectToRoute('homepage');
+        }
+
+        return $this->render('article/edit.html.twig', [
+            'form' => $form
         ]);
     }
 }
